@@ -1,0 +1,13 @@
+servicio-img{
+    height: 230px;
+    object-fit: cover;
+}
+
+#servicios .card{
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3 ease ;
+}
+#servicios .card:hover{
+    transform: translateY(-5px);
+}
