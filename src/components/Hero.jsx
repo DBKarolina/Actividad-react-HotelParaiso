@@ -13,7 +13,7 @@ style={{ backgroundImage: `url(${piscina})` }}
 Bienvenidos a Hotel Paraiso
 </p>
 <h1 className="display-2 fw-bold">El descanso que necesitas</h1>
-I
+
 <p className="lead">Disfruta de una experiencia inolvidable en nuestro hotel</p>
 <a href="#habitaciones" className="btn btn-light btn-lg mt-3">Ver habitaciones</a>
 </div>
