@@ -8,7 +8,7 @@ import Footer from "../components/Footer"
 import LoginModal from "../components/LoginModal"
 import { useState } from "react"
 
-function Home(onLogin) {
+function Home({onLogin}) {
   const [mostrarLogin, setMostrarLogin] = useState(false)
   return (
     <>
