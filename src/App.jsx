@@ -1,41 +1,51 @@
-import { useState } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import Home from "./pages/Home";
-import Dashboard from "./pages/admin/Dashboard";
-import ClienteDashboard from "./pages/cliente/ClienteDashboard";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { useState } from "react"
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom"
+import Home from "./pages/Home"
+import Dashboard from "./pages/admin/Dashboard"
+import ClienteDashboard from "./pages/cliente/ClienteDashboard"
+import ProtectedRoute from "./components/ProtectedRoute"
 
 function App() {
-  const [autenticado, setAutenticado] = useState(false);
-  const navigate = useNavigate();
-  const iniciarSesion = () => {
-    setAutenticado(true);
-    navigate("/admin");
-  };
+  const [usuario, setUsuario] = useState(null)
+  const navigate = useNavigate()
+  
+  const iniciarSesion = (rol) => {
+    setUsuario(rol)
+    navigate(rol === "admin" ? "/admin" : "/cliente")
+  }
   const cerrarSesion = () => {
-    setAutenticado(false);
-    navigate("/");
-  };
-
+    setUsuario(null)
+    navigate("/")
+  }
   return (
     <Routes>
-      <Route path="/" element={<Home onLogin={iniciarSesion} />} />
-
+      <Route
+        path="/"
+        element={<Home onLogin={iniciarSesion} />}
+       
+      />
       <Route
         path="/admin"
         element={
-          <ProtectedRoute autenticado={autenticado}>
+            <ProtectedRoute usuario={usuario} rolPermitido="admin"> 
             <Dashboard onLogout={cerrarSesion} />
+            </ProtectedRoute>
+        }
+        />
+
+        <Route
+        path="/cliente"
+        element={
+          <ProtectedRoute usuario={usuario} rolPermitido="cliente">
+            <ClienteDashboard onLogout={cerrarSesion} />
+
           </ProtectedRoute>
         }
-      />
-
-      <Route
-        path="/cliente"
-        element={<ClienteDashboard onLogout={cerrarSesion} />}
-      />
+        />
+         
+    
     </Routes>
-  );
+  )
 }
 
-export default App;
+export default App

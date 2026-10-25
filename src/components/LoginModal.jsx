@@ -1,40 +1,47 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
- 
+
 function LoginModal({ mostrar, cerrar, onLogin }) {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
- 
+
   if (!mostrar) return null;
- 
+
   const iniciarSesion = (e) => {
-    e.preventDefault();
- 
+    e.preventDefault()
+
+    let rol = null
+    
     if (
-      correo.trim() === "admin@hotel.com" && password === "12345"
-    ) {
-      Swal.fire({
-        icon:"success",
-        title:"Bienvenid@",
-        text:"Sesión iniciada correctamente",
-        confirmButtonText:"Continuar",
-        confirmButtonColor:"#344c5c"
-      }).then(() => {
-        cerrar()
-        onLogin()
-      })
+      correo.trim() === "admin@hotel.com" &&
+      password === "12345") {
+        rol = "admin"
+      } else if (correo.trim() === "cliente@hotel.com" && password ==="12345") {
+        rol = "cliente"
+      }  
+      if (rol){
+       Swal.fire({
+      icon:"success",
+      title:"Bienvenid@", 
+      text:"Sesión iniciada correctamente",
+      confirmButtonText:"Continuar",
+      confirmButtonColor:"#344c5c"
+    }).then(() => {
+      cerrar()
+      onLogin(rol)
+    })
     } else {
       Swal.fire({
         icon:"error",
-        title:"Acceso denegado",
-        text:"El correo o la contraseña es incorrecto",
+        title: "Acceso denegado",
+        text: "El correo o la contraseña son incorrectos",
         confirmButtonText:"Intentar nuevamente",
-        confirmButtonColor:"#344c5c"
+        confirmButtonColor: "344c5c"
       })
     }
- 
+
   };
- 
+
   return (
     <div
       className="modal d-block"
@@ -53,12 +60,12 @@ function LoginModal({ mostrar, cerrar, onLogin }) {
               onClick={cerrar}
             />
           </div>
- 
+
           <div className="modal-body px-4 pb-4">
             <p className="text-muted">
               Ingresa a tu cuenta del hotel
             </p>
- 
+
             <form onSubmit={iniciarSesion}>
               <div className="mb-3">
                 <label className="form-label">
@@ -73,7 +80,7 @@ function LoginModal({ mostrar, cerrar, onLogin }) {
                   required
                 />
               </div>
- 
+
               <div className="mb-4">
                 <label className="form-label">
                   Contraseña
@@ -87,16 +94,16 @@ function LoginModal({ mostrar, cerrar, onLogin }) {
                   required
                 />
               </div>
- 
+
               <button
                 type="submit"
                 className="btn w-100 text-white py-2"
-                style={{ backgroundColor: "#176b70" }}
+                style={{ backgroundColor: "#6b7017" }}
               >
                 Iniciar sesión
               </button>
             </form>
- 
+
             <p className="text-center mt-3 mb-0">
               ¿No tienes cuenta?{" "}
               <a href="#" onClick={(e) => e.preventDefault()}>
@@ -109,5 +116,5 @@ function LoginModal({ mostrar, cerrar, onLogin }) {
     </div>
   );
 }
- 
+
 export default LoginModal;
