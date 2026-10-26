@@ -3,6 +3,7 @@ import Swal from 'sweetalert2'
 import Sidebar from '../../components/Sidebar'
 import './Dashboard.css'
 import TablaReservas from '../../components/TablaReservas'
+import TablaHabitaciones from '../../components/TablaHabitaciones'
 
 const reservas = [
   { id: 'R-001', huesped: 'Laura Gómez', habitacion: 'Suite 201', fecha: '18/10/2026', estado: 'Confirmada' },
@@ -117,6 +118,9 @@ function Dashboard({ onLogout }) {
               </div>
             </section>
           </>
+        ): seccion === "Habitaciones" ? (
+          <TablaHabitaciones />
+
         ) : seccion === "Reservas" ? (
           <TablaReservas />
 
