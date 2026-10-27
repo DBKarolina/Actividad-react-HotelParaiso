@@ -1,9 +1,10 @@
 import { useState } from "react";
 import Sidebar from "../../components/Sidebar";
 import TablaReservas from "../../components/TablaReservas";
+import PerfilCliente from "../../components/PerfilCliente";
 import "../admin/Dashboard.css"
 
-function ClienteDashboard({ onLogout }){
+function ClienteDashboard({ onLogout, cliente, onProfileUpdate }){
     const [seccion, setSeccion] = useState("Mis reservas")
     const opciones =["Mis reservas", "Mi perfil"]
 
@@ -19,9 +20,9 @@ return (
 <main className="hp-main">
     <header className="hp-header">
         <div>
-            <p className="hp-eyebrown">PANEL DEL CLIENTE</p>
+            <p className="hp-eyebrow">PANEL DEL CLIENTE</p>
             <h1>{seccion}</h1>
-            <p>Bienvenido al hotel Paraiso</p>
+            <p>Bienvenido al Hotel Paraíso</p>
         </div>
     </header>
     <section className="hp-panel">
@@ -34,7 +35,19 @@ return (
             }
             </p>
         </div>
-        {seccion === "Mis reservas" && <TablaReservas />}
+        {seccion === "Mis reservas" && (
+            <TablaReservas
+                modoCliente
+                clienteId={cliente.id}
+                clienteNombre={cliente.nombre}
+            />
+        )}
+        {seccion === "Mi perfil" && (
+            <PerfilCliente
+                cliente={cliente}
+                onProfileUpdate={onProfileUpdate}
+            />
+        )}
     </section>
 </main>
 

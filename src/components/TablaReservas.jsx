@@ -3,6 +3,7 @@ import Swal from "sweetalert2"
 import { useState , useEffect } from "react"
 import DataTable from "react-data-table-component"
 import { createRoot } from "react-dom/client"
+import { cargarHabitaciones } from "../utils/habitaciones"
 const reservasIniciales = [
     {
         id: 1,
@@ -19,7 +20,37 @@ const reservasIniciales = [
         estado: "Pendiente"
     }
 ]
-function TablaReservas() {
+
+function obtenerSiguienteCodigoReserva(reservasActuales) {
+    const claveConsecutivo = "consecutivoReservasHotel"
+    const reservasGuardadas = localStorage.getItem("reservasHotel")
+    const todasLasReservas = reservasGuardadas
+        ? [...reservasActuales, ...JSON.parse(reservasGuardadas)]
+        : reservasActuales
+    const mayorCodigoExistente = todasLasReservas.reduce((mayor, reserva) => {
+        const coincidencia =
+            typeof reserva.id === "string" && reserva.id.match(/^RES-(\d+)$/)
+        return coincidencia
+            ? Math.max(mayor, Number(coincidencia[1]))
+            : mayor
+    }, 0)
+    const consecutivoGuardado = Number(
+        localStorage.getItem(claveConsecutivo)
+    )
+    const siguiente = Math.max(
+        Number.isSafeInteger(consecutivoGuardado) ? consecutivoGuardado : 0,
+        mayorCodigoExistente
+    ) + 1
+
+    if (!Number.isSafeInteger(siguiente)) {
+        throw new Error("Se agotó el consecutivo de códigos de reserva.")
+    }
+
+    localStorage.setItem(claveConsecutivo, String(siguiente))
+    return `RES-${String(siguiente).padStart(3, "0")}`
+}
+
+function TablaReservas({ modoCliente = false, clienteId = null, clienteNombre = "" }) {
     const [reservas, setReservas] = useState(() =>{
         const guardadas = localStorage.getItem("reservasHotel")
         return guardadas ? JSON.parse(guardadas) : reservasIniciales
@@ -28,26 +59,63 @@ function TablaReservas() {
     const [busqueda, setBusqueda] = useState("")
     const abrirFormulario = async (reserva = null) => {
         const contenedor = document.createElement("div")
-        const raiz = createRoot(contenedor)
+        let habitaciones = []
 
+        if (modoCliente) {
+            try {
+                habitaciones = cargarHabitaciones()
+            } catch {
+                await Swal.fire({
+                    icon: "error",
+                    title: "No se pudieron cargar las habitaciones",
+                    text: "Revisa los datos guardados de habitaciones e inténtalo nuevamente.",
+                    confirmButtonColor: "#344c5c",
+                })
+                return
+            }
+        }
+
+        const raiz = createRoot(contenedor)
         raiz.render(
             <FormularioReserva
             reserva={reserva}
+            modoCliente={modoCliente}
+            habitaciones={habitaciones}
+            reservas={reservas}
             guardar={(datos) => {
-                if (reserva){ 
-                    setReservas(actuales =>
-                        actuales.map(r =>
-                            r.id === reserva.id ? {...r, ...datos} : r
+                if (reserva) {
+                    setReservas((actuales) =>
+                        actuales.map((registro) =>
+                            registro.id === reserva.id
+                                ? { ...registro, ...datos }
+                                : registro
                         )
                     )
+                } else {
+                    let codigoReserva
+                    try {
+                        codigoReserva = obtenerSiguienteCodigoReserva(reservas)
+                    } catch {
+                        Swal.fire({
+                            icon: "error",
+                            title: "No se pudo generar el código",
+                            text: "No fue posible guardar el consecutivo de reservas en este navegador.",
+                            confirmButtonColor: "#344c5c",
+                        })
+                        return
+                    }
 
-                }else {
-                const nuevaReserva = {
-                    id: Math.max(0, ...reservas.map(r => r.id)) + 1,
-                   ...datos,
+                    setReservas((actuales) => {
+                        const nuevaReserva = {
+                            id: codigoReserva,
+                            ...datos,
+                            ...(modoCliente
+                                ? { clienteId, clienteNombre }
+                                : {}),
+                        }
+                        return [...actuales, nuevaReserva]
+                    })
                 }
-                setReservas(actuales => [...actuales, nuevaReserva])
-            }
                 Swal.close()
             }}
             cancelar={() => Swal.close()}
@@ -89,9 +157,32 @@ useEffect(() => {
             selector: fila => fila.id,
             sortable: true
         },
+        ...(!modoCliente
+            ? [
+                {
+                    name: "Cliente",
+                    selector: (fila) =>
+                        fila.clienteNombre ||
+                        (fila.clienteId ? "Cliente registrado" : "Sin asignar"),
+                    sortable: true,
+                },
+            ]
+            : []),
         {
             name: "Habitación",
             selector: fila => fila.habitacion,
+            sortable: true
+        },
+        {
+            name: "Tipo",
+            selector: fila => fila.tipoHabitacion || "—",
+            sortable: true
+        },
+        {
+            name: "Precio",
+            selector: fila => fila.precioHabitacion
+                ? `$${Number(fila.precioHabitacion).toLocaleString("es-CO")}`
+                : "—",
             sortable: true
         },
         {
@@ -135,10 +226,14 @@ useEffect(() => {
 
 
 
-    const reservasFiltradas = reservas.filter(reserva =>
-        reserva.habitacion.toLowerCase().includes(busqueda.toLowerCase()) ||
-        reserva.estado.toLowerCase().includes(busqueda.toLowerCase())
-    )
+    const reservasFiltradas = reservas.filter((reserva) => {
+        const perteneceAlCliente =
+            !modoCliente || reserva.clienteId === clienteId
+        const coincideBusqueda =
+            reserva.habitacion.toLowerCase().includes(busqueda.toLowerCase()) ||
+            reserva.estado.toLowerCase().includes(busqueda.toLowerCase())
+        return perteneceAlCliente && coincideBusqueda
+    })
 
     return(
         <div>
@@ -156,9 +251,9 @@ useEffect(() => {
              style={{ backgroundColor:"#344c5c" }}
              onClick={() => abrirFormulario()}
              
-             >   
+             >
              <i className="bi bi-plus-circle me-2"></i>
-             Nueva Reserva
+             {modoCliente ? "Nueva reserva" : "Nueva Reserva"}
             </button>
               </div>
             <DataTable 

@@ -3,36 +3,14 @@ import FormularioHabitacion from "./FormularioHabitacion"
 import Swal from "sweetalert2"
 
 import DataTable from "react-data-table-component"
-
-const habitacionesIniciales =[
-    {
-        id:1,
-        nombre:"Habitación Estandar",
-        precio:150000,
-        estado:"Disponible"
-
-    }, 
-    {
-        id:2,
-        nombre:"Habitación Premiun",
-        precio:250000,
-        estado:"Disponible"
-
-    },
-    {
-        id:3,
-        nombre:"Habitación Suite",
-        precio:500000,
-        estado:"Mantenimiento"
-
-    }
-]
-
+import {
+    cargarHabitaciones,
+    obtenerTipoHabitacion,
+} from "../utils/habitaciones"
 
 function TablaHabitaciones() {
     const [habitaciones, setHabitaciones] = useState(() => {
-        const guardadas = localStorage.getItem("habitacionesHotel")
-        return guardadas ? JSON.parse(guardadas) : habitacionesIniciales
+        return cargarHabitaciones()
     })
     const [mostrarFormulario , setMostrarFormulario] = useState(false)
     const [habitacionEditando, setHabitacionEditando] = useState(null)
@@ -119,6 +97,11 @@ function TablaHabitaciones() {
             selector:fila => fila.nombre,
             sortable:true
         }, 
+        {
+            name:"Tipo",
+            selector:fila => obtenerTipoHabitacion(fila),
+            sortable:true
+        },
         {
             name:"Precio",
             selector:fila => fila.precio,
